@@ -6,9 +6,10 @@
 <suite name="SuiteOne" >
 
     <test name="Test" >
+        <parameter name="browser" value="${browser}"></parameter>
         <classes>
-            <class name="com.interview.learn.tests.MySecondJava"/>
             <class name="com.interview.learn.tests.MyFirstJava"/>
+            <class name="com.interview.learn.tests.MySecondJava"/>
         </classes>
     </test> <!-- Test -->
 
