@@ -3,14 +3,26 @@
 
 
 
-<suite name="SuiteOne" >
+<suite name="SuiteOne" parallel="methods" thread-count="6">
 
-    <test name="Test" >
-        <parameter name="browser" value="${browser}"></parameter>
+    <test name="TestChrome">
+        <parameter name="browser" value="CHROME"></parameter>
         <classes>
             <class name="com.interview.learn.tests.MyFirstJava"/>
             <class name="com.interview.learn.tests.MySecondJava"/>
+            <class name="com.interview.learn.tests.MyThirdJava"/>
         </classes>
     </test> <!-- Test -->
+
+
+    <!--<test name="TestFriefox" >-->
+        <!--<parameter name="browser" value="FIREFOX"></parameter>-->
+        <!--<classes>-->
+            <!--<class name="com.interview.learn.tests.MyFirstJava"/>-->
+            <!--<class name="com.interview.learn.tests.MySecondJava"/>-->
+            <!--<class name="com.interview.learn.tests.MyThirdJava"/>-->
+        <!--</classes>-->
+    <!--</test> &lt;!&ndash; Test &ndash;&gt;-->
+
 
 </suite>
