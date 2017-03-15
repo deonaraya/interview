@@ -19,7 +19,7 @@ public class MySecondJava extends BaseTest {
 
         String title = driver.getTitle() ;
 
-        Assert.assertTrue(title.contains("Shop"));
+        Assert.assertTrue(title.contains("Shop FAIL"));
 
     }
 
