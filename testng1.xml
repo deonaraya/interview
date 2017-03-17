@@ -6,7 +6,7 @@
 <suite name="SuiteOne" parallel="methods" thread-count="6">
 
     <test name="TestChrome">
-        <parameter name="browser" value="CHROME"></parameter>
+        <parameter name="browser" value="${browser}"></parameter>
         <classes>
             <class name="com.interview.learn.tests.MyFirstJava"/>
             <class name="com.interview.learn.tests.MySecondJava"/>
