@@ -1,89 +1,110 @@
 package com.interview.learn.tests;
 
-import com.relevantcodes.extentreports.ExtentReports;
+import com.aventstack.extentreports.ExtentReports;
+import com.aventstack.extentreports.ExtentTest;
+import com.aventstack.extentreports.reporter.ExtentHtmlReporter;
 import org.apache.commons.io.FileUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.testng.ITestResult;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.AfterSuite;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Parameters;
+import org.testng.annotations.*;
 
+import java.awt.*;
 import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Method;
 
 /**
- * Created by chandrad on 3/10/17.
+ * Created by chandrad on 3/18/17.
  */
 public class BaseTest {
 
-    WebDriver driver ;
+    public WebDriver driver ;
+    private static ExtentReports extent;
+    protected static ThreadLocal<ExtentTest> parentTest = new ThreadLocal<ExtentTest>();
+    protected static ThreadLocal<ExtentTest> test = new ThreadLocal<ExtentTest>();
 
-    Logger LOGGER = LogManager.getLogger(BaseTest.class);
+    @BeforeSuite
+    public void beforeSuite() {
+        extent = ExtentManager.createInstance("extent.html");
+        ExtentHtmlReporter htmlReporter = new ExtentHtmlReporter("extent.html");
+        extent.attachReporter(htmlReporter);
+    }
 
-    ExtentReports extent = new ExtentReports("reports.html");
-
-
+    @BeforeClass
+    public synchronized void beforeClass() {
+        ExtentTest parent = extent.createTest(getClass().getName());
+        parentTest.set(parent);
+    }
     @Parameters("browser")
     @BeforeMethod
-    public void setUp(String browser){
+    public synchronized void beforeMethod(String browser, Method method) {
 
+        ExtentTest child = parentTest.get().createNode(method.getName());
+        test.set(child);
+        driver = getBrowserInstance(browser) ;
 
-        if (browser.equalsIgnoreCase("firefox"))
-        {
-            System.setProperty("webdriver.gecko.driver","/Users/chandrad/Documents/DeoTrainings/Interviews/src/main/resources/geckodriver");
-            driver = new FirefoxDriver() ;
-        }
-
-        else if (browser.equalsIgnoreCase("chrome"))
-        {
-            System.setProperty("webdriver.chrome.driver","/Users/chandrad/Documents/DeoTrainings/Interviews/src/main/resources/chromedriver");
-            driver = new ChromeDriver() ;
-        }
-
-        else {
-            throw new IllegalArgumentException("Invalid browser value!!");
-        }
     }
 
     @AfterMethod
-    public void teardown(ITestResult result){
-
-        if(result.getStatus()==ITestResult.FAILURE)
+    public synchronized void afterMethod(ITestResult result) {
+        if (result.getStatus() == ITestResult.FAILURE)
         {
             try {
-                TakesScreenshot ts =(TakesScreenshot)driver;
+                // add screenshot to log
+                // test.get().fail("details", MediaEntityBuilder.createScreenCaptureFromPath(takeScreenshot(result)).build()) ;
 
-                // Call method to capture screenshot  // save ctrl+ s
-                File source= ts.getScreenshotAs(OutputType.FILE);
-
-                // Copy files to specific location here it will save all screenshot in our project home directory and
-                // result.getName() will return name of test case so that screenshot name will be same
-                FileUtils.copyFile(source, new File("./Screenshots/"+result.getName()+".png"));
-
-                LOGGER.info("Screenshot taken in case of failure");
-
-            } catch (Exception e) {
-               LOGGER.error("Exception while taking screenshot "+e.getMessage());
+                // add screenshot to test
+                test.get().fail("Test failed attaching the captured screenshots").addScreenCaptureFromPath(takeScreenshot(result));
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        }
+
+            test.get().fail(result.getThrowable());}
+        else if (result.getStatus() == ITestResult.SKIP)
+            test.get().skip(result.getThrowable());
+        else
+            test.get().pass("Test passed");
 
         extent.flush();
         driver.close();
         driver.quit();
-
     }
 
-    @AfterSuite
-    public void afterClass(){
 
-        extent.close();
+    public String takeScreenshot(ITestResult result) throws IOException {
+        TakesScreenshot ts =(TakesScreenshot)driver;
+
+        // Call method to capture screenshot  // save ctrl+ s
+        File source= ts.getScreenshotAs(OutputType.FILE);
+
+        // Copy files to specific location here it will save all screenshot in our project home directory and
+        // result.getName() will return name of test case so that screenshot name will be same
+
+        String screenshot = "./Screenshots/"+ result.getName()+  System.currentTimeMillis() +".png" ;
+        FileUtils.copyFile(source,new File(screenshot));
+        return screenshot ;
+    }
+
+    public static WebDriver getBrowserInstance(String browserName) {
+
+        WebDriver driver = null;
+        if (browserName.equalsIgnoreCase("firefox")) {
+            System.setProperty("webdriver.gecko.driver", "src/main/resources/geckodriver");
+            driver = new FirefoxDriver();
+            driver.manage().window().maximize();
+        }
+        if (browserName.equalsIgnoreCase("chrome")) {
+              System.setProperty("webdriver.chrome.driver", "src/main/resources/chromedriver");
+            driver = new ChromeDriver();
+            Toolkit toolkit = Toolkit.getDefaultToolkit();
+            int Width = (int) toolkit.getScreenSize().getWidth();
+            int Height = (int) toolkit.getScreenSize().getHeight();
+            driver.manage().window().setSize(new org.openqa.selenium.Dimension(Width, Height));
+        }
+        return driver;
     }
 }
-
-

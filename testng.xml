@@ -3,13 +3,15 @@
 
 
 
-<suite name="SuiteOne" >
+<suite name="SuiteOne" parallel="classes" >
 
     <test name="Test" >
-        <parameter name="browser" value="firefox"></parameter>
+        <parameter name="browser" value="chrome"></parameter>
         <classes>
+
             <class name="com.interview.learn.tests.MyFirstJava"/>
-            <!--<class name="com.interview.learn.tests.MySecondJava"/>-->
+            <class name="com.interview.learn.tests.MySecondJava"/>
+            <class name="com.interview.learn.tests.MyThirdJava"/>
         </classes>
     </test> <!-- Test -->
 
