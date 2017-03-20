@@ -6,7 +6,7 @@
 <suite name="SuiteOne" parallel="classes" >
 
     <test name="Test" >
-        <parameter name="browser" value="chrome"></parameter>
+        <parameter name="browser" value="CHROME"></parameter>
         <classes>
 
             <class name="com.interview.learn.tests.MyFirstJava"/>
